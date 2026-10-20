@@ -1,17 +1,21 @@
-from flask import Flask, request, render_template_string, abort
+from flask import Flask, request, render_template_string, abort, send_from_directory
 import json
 import os
 
 app = Flask(__name__)
 
 def load_tokens():
-    # En Vercel, lee el archivo JSON de tokens
     path = os.path.join(os.path.dirname(__file__), '..', 'tokens.json')
     try:
         with open(path, 'r') as f:
             return json.load(f)
     except Exception:
         return {}
+
+# Ruta para servir los archivos estáticos desde la carpeta public
+@app.route('/public/<path:path>')
+def send_static(path):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'public'), path)
 
 @app.route('/')
 def serve_app():
@@ -30,7 +34,6 @@ def serve_app():
             </html>
         '''), 403
     
-    # Si el token es válido, cargamos y servimos tu app original (Fulbito5.html)
     html_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'Fulbito5.html')
     try:
         with open(html_path, 'r', encoding='utf-8') as f:

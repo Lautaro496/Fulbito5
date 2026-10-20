@@ -1,618 +1,238 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Fulbito5</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
-<style>
-/* Layout: two "modal" cards side by side (form | pitch, scores+hexagon | plantel), stacked on phones. */
-:root{
-  --bg:#e8eee7;
-  --surface:#f8faf6;
-  --field:#ffffff;
-  --ink:#14201a;
-  --muted:#53645a;
-  --rule:#c8d3c6;
-  --grass-a:#2e7a4c;
-  --grass-b:#2a7147;
-  --chalk:#f3f8f1;
-  --accent:#c2410c;
-  --accent-ink:#ffffff;
-  --accent-soft:rgba(194,65,12,.22);
-  --good:#1d7a46;
-  --bad:#b42318;
-  --font-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
-  --font-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0d1511;
-    --surface:#15211a;
-    --field:#0f1a14;
-    --ink:#e5eee7;
-    --muted:#9bad9f;
-    --rule:#2a3a2f;
-    --grass-a:#1c5233;
-    --grass-b:#194a2e;
-    --chalk:#dcebe0;
-    --accent:#ff8a3d;
-    --accent-ink:#1a0e05;
-    --accent-soft:rgba(255,138,61,.26);
-    --good:#5fd08b;
-    --bad:#ff8b7e;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0d1511;
-  --surface:#15211a;
-  --field:#0f1a14;
-  --ink:#e5eee7;
-  --muted:#9bad9f;
-  --rule:#2a3a2f;
-  --grass-a:#1c5233;
-  --grass-b:#194a2e;
-  --chalk:#dcebe0;
-  --accent:#ff8a3d;
-  --accent-ink:#1a0e05;
-  --accent-soft:rgba(255,138,61,.26);
-  --good:#5fd08b;
-  --bad:#ff8b7e;
-  color-scheme:dark;
-}
-
-*{box-sizing:border-box}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:var(--font-body);
-  font-size:16px;
-  line-height:1.45;
-  padding-left:max(16px,env(safe-area-inset-left,0px));
-  padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-block:20px 48px;
-}
-.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-button,input{font:inherit;color:inherit}
-:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-
-/* Header */
-.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
-.brand{display:flex;flex-direction:column;gap:2px;min-width:0}
-.brand h1{margin:0;font-family:var(--font-display);font-weight:700;font-size:40px;line-height:1;letter-spacing:.04em;text-transform:uppercase}
-.brand h1 b{color:var(--accent);font-weight:700}
-.brand p{margin:0;color:var(--muted);font-size:14px}
-.steps{display:flex;gap:6px;margin:0;padding:0;list-style:none;flex-wrap:wrap}
-.steps button{
-  display:flex;align-items:center;gap:8px;
-  background:transparent;border:1px solid var(--rule);border-radius:999px;
-  padding:6px 14px 6px 6px;cursor:pointer;
-  font-family:var(--font-display);font-weight:600;font-size:17px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);
-}
-.steps .n{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--rule);color:var(--ink);font-size:15px}
-.steps button[aria-current="step"]{color:var(--ink);border-color:var(--accent)}
-.steps button[aria-current="step"] .n{background:var(--accent);color:var(--accent-ink)}
-.steps button:disabled{opacity:.5;cursor:not-allowed}
-
-/* Notices */
-.notice{margin:0;padding:10px 14px;border-radius:10px;border:1px solid var(--rule);background:var(--surface);color:var(--muted);font-size:14px}
-
-/* Cards */
-.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
-.card{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:20px;min-width:0}
-.card h2{margin:0 0 4px;font-family:var(--font-display);font-weight:700;font-size:26px;line-height:1.1;letter-spacing:.03em;text-transform:uppercase}
-.card .sub{margin:0 0 16px;color:var(--muted);font-size:14px}
-.view[hidden]{display:none}
-
-/* Form */
-.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
-.field label{font-family:var(--font-display);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.field input{
-  height:52px;padding:0 14px;background:var(--field);border:1px solid var(--rule);border-radius:10px;
-  font-size:19px;width:100%;
-}
-.field input#num{font-family:var(--font-display);font-weight:700;font-size:30px;letter-spacing:.04em;font-variant-numeric:tabular-nums}
-.pos-read{
-  display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px dashed var(--rule);border-radius:10px;margin-bottom:16px;
-}
-.pos-read span{font-family:var(--font-display);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.pos-read strong{font-family:var(--font-display);font-weight:700;font-size:26px;letter-spacing:.02em}
-.err{min-height:1.4em;margin:0 0 10px;color:var(--bad);font-size:14px}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 24px;border-radius:10px;border:0;cursor:pointer;
-  background:var(--accent);color:var(--accent-ink);
-  font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.06em;text-transform:uppercase;
-}
-.btn:disabled{opacity:.55;cursor:progress}
-.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule)}
-
-/* Pitch */
-.pitch-wrap{display:flex;flex-direction:column;gap:10px;align-items:center}
-#pitch{width:100%;max-width:340px;height:auto;touch-action:none;cursor:crosshair;border-radius:10px;display:block}
-.pitch-note{margin:0;color:var(--muted);font-size:13px;text-align:center}
-
-/* Scores */
-.chip{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.chip .num{display:grid;place-items:center;min-width:48px;height:48px;padding:0 6px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-family:var(--font-display);font-weight:700;font-size:26px;font-variant-numeric:tabular-nums}
-.chip .who{min-width:0;display:flex;flex-direction:column}
-.chip .who strong{font-family:var(--font-display);font-weight:700;font-size:24px;line-height:1.1;overflow-wrap:anywhere}
-.chip .who span{color:var(--muted);font-size:14px}
-.attrs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 18px;margin:0 0 8px;padding:0;list-style:none}
-.attr{display:flex;flex-direction:column;gap:2px;min-width:0}
-.attr .row{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.attr label{font-family:var(--font-display);font-weight:600;font-size:17px;letter-spacing:.04em;text-transform:uppercase}
-.attr output{font-family:var(--font-display);font-weight:700;font-size:26px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
-.attr small{color:var(--muted);font-size:12.5px}
-.attr input[type=range]{width:100%;margin:6px 0 0;accent-color:var(--accent);height:28px}
-.hex-wrap{display:flex;justify-content:center;margin:4px 0}
-#hex{width:100%;max-width:420px;height:auto;display:block}
-.lbl-name{font-family:var(--font-display);font-weight:600;font-size:14px;letter-spacing:.03em;text-transform:uppercase;fill:var(--muted)}
-.lbl-val{font-family:var(--font-display);font-weight:700;font-size:19px;fill:var(--ink)}
-.dataG{transform-origin:180px 160px}
-.dataG.unfold{animation:unfold .55s cubic-bezier(.2,.8,.2,1)}
-@keyframes unfold{from{transform:scale(.25);opacity:0}to{transform:scale(1);opacity:1}}
-@media (prefers-reduced-motion: reduce){.dataG.unfold{animation:none}}
-.final{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;border-top:1px solid var(--rule);padding-top:16px;margin-top:8px}
-.final .big{display:flex;align-items:baseline;gap:10px}
-.final .big output{font-family:var(--font-display);font-weight:700;font-size:76px;line-height:.9;color:var(--accent);font-variant-numeric:tabular-nums}
-.final .big div{display:flex;flex-direction:column}
-.final .big strong{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.06em;text-transform:uppercase}
-.final .big span{color:var(--muted);font-size:13px}
-
-/* Roster */
-.roster{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
-.roster li{display:grid;grid-template-columns:40px minmax(0,1fr) 92px;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--rule)}
-.roster li:first-child{border-top:0}
-.roster .badge{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--field);border:1px solid var(--rule);font-family:var(--font-display);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
-.roster li.me .badge{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.roster .nm{min-width:0;display:flex;flex-direction:column}
-.roster .nm b{font-weight:600;overflow-wrap:anywhere}
-.roster .nm span{color:var(--muted);font-size:13px}
-.roster .sc{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-.roster .sc strong{font-family:var(--font-display);font-weight:700;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
-.roster .bar{width:100%;height:5px;border-radius:3px;background:var(--rule);overflow:hidden}
-.roster .bar i{display:block;height:100%;background:var(--accent)}
-.empty{margin:0;padding:18px 0 6px;color:var(--muted);font-size:15px}
-.roster-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px}
-.roster-head h2{margin:0}
-.roster-head span{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
-.roster.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:28px}
-.roster.two li:nth-child(2){border-top:0}
-
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:15px;z-index:20;max-width:calc(100% - 32px)}
-
-@media (max-width:760px){
-  .split{grid-template-columns:minmax(0,1fr)}
-  .roster.two{grid-template-columns:minmax(0,1fr)}
-  .roster.two li:nth-child(2){border-top:1px solid var(--rule)}
-  .brand h1{font-size:34px}
-}
-</style>
-
-<div class="wrap">
-  <header class="top">
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+  <link href="/public/styles.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <title>
+   Fulbito5
+  </title>
+  <meta content="cover" name="claude:viewport-fit-sides"/>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+  <div class="wrap">
+   <header class="top">
     <div class="brand">
-      <h1>Fulbito<b>5</b></h1>
-      <p>Martes a la noche · equipos parejos</p>
+     <h1>
+      Fulbito
+      <b>
+       5
+      </b>
+     </h1>
+     <p>
+      Martes a la noche · equipos parejos
+     </p>
     </div>
     <nav aria-label="Pasos">
-      <ol class="steps">
-        <li><button type="button" id="st1"><span class="n">1</span>Registro</button></li>
-        <li><button type="button" id="st2"><span class="n">2</span>Atributos</button></li>
-        <li><button type="button" id="st3"><span class="n">3</span>Plantel</button></li>
-      </ol>
+     <ol class="steps">
+      <li>
+       <button id="st1" type="button">
+        <span class="n">
+         1
+        </span>
+        Registro
+       </button>
+      </li>
+      <li>
+       <button id="st2" type="button">
+        <span class="n">
+         2
+        </span>
+        Atributos
+       </button>
+      </li>
+      <li>
+       <button id="st3" type="button">
+        <span class="n">
+         3
+        </span>
+        Plantel
+       </button>
+      </li>
+     </ol>
     </nav>
-  </header>
-
-  <p class="notice" id="notice" hidden></p>
-
-  <!-- Paso 1: registro -->
-  <section class="view" id="v1" aria-labelledby="h1reg">
+   </header>
+   <p class="notice" hidden="" id="notice">
+   </p>
+   <!-- Paso 1: registro -->
+   <section aria-labelledby="h1reg" class="view" id="v1">
     <div class="split">
-      <form class="card" id="regForm" novalidate>
-        <h2 id="h1reg">Registro</h2>
-        <p class="sub">Elegí tu número y tu nombre, y ubicá tu chinche en la cancha.</p>
-        <div class="field">
-          <label for="num">Número de jugador</label>
-          <input id="num" type="number" inputmode="numeric" min="1" max="99" step="1" placeholder="10" autocomplete="off">
-        </div>
-        <div class="field">
-          <label for="name">Nombre</label>
-          <input id="name" type="text" maxlength="24" placeholder="Tu nombre o apodo" autocomplete="off">
-        </div>
-        <div class="pos-read" aria-live="polite">
-          <span>Posición</span>
-          <strong id="posText">Tocá la cancha</strong>
-        </div>
-        <p class="err" id="err" role="alert"></p>
-        <button class="btn" type="submit" id="goBtn">Continuar</button>
-      </form>
-      <div class="card pitch-wrap">
-        <svg id="pitch" viewBox="0 0 300 420" tabindex="0" role="group" aria-label="Cancha. Tocá o usá las flechas para ubicar tu posición.">
-          <g id="grass"></g>
-          <g fill="none" stroke="var(--chalk)" stroke-width="1.6" stroke-opacity=".9">
-            <rect x="12" y="12" width="276" height="396"/>
-            <line x1="12" y1="210" x2="288" y2="210"/>
-            <circle cx="150" cy="210" r="36"/>
-            <rect x="80" y="12" width="140" height="60"/>
-            <rect x="115" y="12" width="70" height="26"/>
-            <path d="M129.6 72 A30 30 0 0 0 170.4 72"/>
-            <rect x="80" y="348" width="140" height="60"/>
-            <rect x="115" y="382" width="70" height="26"/>
-            <path d="M129.6 348 A30 30 0 0 1 170.4 348"/>
-            <rect x="135" y="5" width="30" height="7"/>
-            <rect x="135" y="408" width="30" height="7"/>
-          </g>
-          <circle cx="150" cy="210" r="2.5" fill="var(--chalk)"/>
-          <circle cx="150" cy="50" r="2" fill="var(--chalk)"/>
-          <circle cx="150" cy="370" r="2" fill="var(--chalk)"/>
-          <text x="150" y="196" text-anchor="middle" font-size="11" fill="var(--chalk)" fill-opacity=".75" style="font-family:var(--font-display);letter-spacing:.12em">ATAQUE ▲</text>
-          <g id="others"></g>
-          <g id="pin" hidden>
-            <ellipse cx="0" cy="15" rx="10" ry="3.5" fill="#000" fill-opacity=".28"/>
-            <circle r="15" fill="var(--accent)" stroke="#fff" stroke-width="2.5"/>
-            <text id="pinNum" y="6" text-anchor="middle" font-size="18" font-weight="700" fill="var(--accent-ink)" style="font-family:var(--font-display)"></text>
-          </g>
-        </svg>
-        <p class="pitch-note">Tocá la cancha para poner tu chinche. Podés arrastrarlo.</p>
+     <form class="card" id="regForm" novalidate="">
+      <h2 id="h1reg">
+       Registro
+      </h2>
+      <p class="sub">
+       Elegí tu número y tu nombre, y ubicá tu chinche en la cancha.
+      </p>
+      <div class="field">
+       <label for="num">
+        Número de jugador
+       </label>
+       <input autocomplete="off" id="num" inputmode="numeric" max="99" min="1" placeholder="10" step="1" type="number"/>
       </div>
+      <div class="field">
+       <label for="name">
+        Nombre
+       </label>
+       <input autocomplete="off" id="name" maxlength="24" placeholder="Tu nombre o apodo" type="text"/>
+      </div>
+      <div aria-live="polite" class="pos-read">
+       <span>
+        Posición
+       </span>
+       <strong id="posText">
+        Tocá la cancha
+       </strong>
+      </div>
+      <p class="err" id="err" role="alert">
+      </p>
+      <button class="btn" id="goBtn" type="submit">
+       Continuar
+      </button>
+     </form>
+     <div class="card pitch-wrap">
+      <svg aria-label="Cancha. Tocá o usá las flechas para ubicar tu posición." id="pitch" role="group" tabindex="0" viewbox="0 0 300 420">
+       <g id="grass">
+       </g>
+       <g fill="none" stroke="var(--chalk)" stroke-opacity=".9" stroke-width="1.6">
+        <rect height="396" width="276" x="12" y="12">
+        </rect>
+        <line x1="12" x2="288" y1="210" y2="210">
+        </line>
+        <circle cx="150" cy="210" r="36">
+        </circle>
+        <rect height="60" width="140" x="80" y="12">
+        </rect>
+        <rect height="26" width="70" x="115" y="12">
+        </rect>
+        <path d="M129.6 72 A30 30 0 0 0 170.4 72">
+        </path>
+        <rect height="60" width="140" x="80" y="348">
+        </rect>
+        <rect height="26" width="70" x="115" y="382">
+        </rect>
+        <path d="M129.6 348 A30 30 0 0 1 170.4 348">
+        </path>
+        <rect height="7" width="30" x="135" y="5">
+        </rect>
+        <rect height="7" width="30" x="135" y="408">
+        </rect>
+       </g>
+       <circle cx="150" cy="210" fill="var(--chalk)" r="2.5">
+       </circle>
+       <circle cx="150" cy="50" fill="var(--chalk)" r="2">
+       </circle>
+       <circle cx="150" cy="370" fill="var(--chalk)" r="2">
+       </circle>
+       <text fill="var(--chalk)" fill-opacity=".75" font-size="11" style="font-family:var(--font-display);letter-spacing:.12em" text-anchor="middle" x="150" y="196">
+        ATAQUE ▲
+       </text>
+       <g id="others">
+       </g>
+       <g hidden="" id="pin">
+        <ellipse cx="0" cy="15" fill="#000" fill-opacity=".28" rx="10" ry="3.5">
+        </ellipse>
+        <circle fill="var(--accent)" r="15" stroke="#fff" stroke-width="2.5">
+        </circle>
+        <text fill="var(--accent-ink)" font-size="18" font-weight="700" id="pinNum" style="font-family:var(--font-display)" text-anchor="middle" y="6">
+        </text>
+       </g>
+      </svg>
+      <p class="pitch-note">
+       Tocá la cancha para poner tu chinche. Podés arrastrarlo.
+      </p>
+     </div>
     </div>
-  </section>
-
-  <!-- Paso 2: atributos -->
-  <section class="view" id="v2" aria-labelledby="h2att" hidden>
+   </section>
+   <!-- Paso 2: atributos -->
+   <section aria-labelledby="h2att" class="view" hidden="" id="v2">
     <div class="split">
-      <div class="card">
-        <div class="chip">
-          <div class="num" id="chipNum">–</div>
-          <div class="who"><strong id="chipName">–</strong><span id="chipPos">–</span></div>
-        </div>
-        <h2 id="h2att">Tus puntajes</h2>
-        <p class="sub">Puntuate de 1 a 10. Sé honesto: de eso depende que los equipos salgan parejos.</p>
-        <ul class="attrs" id="attrs"></ul>
-        <div class="hex-wrap">
-          <svg id="hex" viewBox="0 0 360 320" role="img" aria-label="Gráfico hexagonal de atributos"></svg>
-        </div>
-        <div class="final">
-          <div class="big">
-            <output id="finalScore" for="attrs">50</output>
-            <div><strong>Puntaje final</strong><span>Promedio de los 6 atributos, sobre 100</span></div>
-          </div>
-          <button class="btn" type="button" id="saveBtn">Guardar ficha</button>
-        </div>
-        <p class="err" id="err2" role="alert"></p>
+     <div class="card">
+      <div class="chip">
+       <div class="num" id="chipNum">
+        –
+       </div>
+       <div class="who">
+        <strong id="chipName">
+         –
+        </strong>
+        <span id="chipPos">
+         –
+        </span>
+       </div>
       </div>
-      <div class="card">
-        <div class="roster-head"><h2>Plantel de hoy</h2><span id="countSide"></span></div>
-        <ul class="roster" id="rosterSide"></ul>
+      <h2 id="h2att">
+       Tus puntajes
+      </h2>
+      <p class="sub">
+       Puntuate de 1 a 10. Sé honesto: de eso depende que los equipos salgan parejos.
+      </p>
+      <ul class="attrs" id="attrs">
+      </ul>
+      <div class="hex-wrap">
+       <svg aria-label="Gráfico hexagonal de atributos" id="hex" role="img" viewbox="0 0 360 320">
+       </svg>
       </div>
+      <div class="final">
+       <div class="big">
+        <output for="attrs" id="finalScore">
+         50
+        </output>
+        <div>
+         <strong>
+          Puntaje final
+         </strong>
+         <span>
+          Promedio de los 6 atributos, sobre 100
+         </span>
+        </div>
+       </div>
+       <button class="btn" id="saveBtn" type="button">
+        Guardar ficha
+       </button>
+      </div>
+      <p class="err" id="err2" role="alert">
+      </p>
+     </div>
+     <div class="card">
+      <div class="roster-head">
+       <h2>
+        Plantel de hoy
+       </h2>
+       <span id="countSide">
+       </span>
+      </div>
+      <ul class="roster" id="rosterSide">
+      </ul>
+     </div>
     </div>
-  </section>
-
-  <!-- Paso 3: plantel -->
-  <section class="view" id="v3" aria-labelledby="h3pl" hidden>
+   </section>
+   <!-- Paso 3: plantel -->
+   <section aria-labelledby="h3pl" class="view" hidden="" id="v3">
     <div class="card">
-      <div class="roster-head"><h2 id="h3pl">Plantel</h2><span id="countMain"></span></div>
-      <ul class="roster two" id="rosterMain"></ul>
-      <div style="margin-top:16px"><button class="btn ghost" type="button" id="editBtn">Editar mi ficha</button></div>
+     <div class="roster-head">
+      <h2 id="h3pl">
+       Plantel
+      </h2>
+      <span id="countMain">
+      </span>
+     </div>
+     <ul class="roster two" id="rosterMain">
+     </ul>
+     <div style="margin-top:16px">
+      <button class="btn ghost" id="editBtn" type="button">
+       Editar mi ficha
+      </button>
+     </div>
     </div>
-  </section>
-</div>
-<div class="toast" id="toast" role="status" hidden></div>
-
-<script>
-(function(){
-  var $ = function(id){ return document.getElementById(id); };
-  var ATTRS = [
-    {k:'fisico',   label:'Físico',                  hint:'Fuerza y choque',               lines:['Físico']},
-    {k:'tiro',     label:'Tiro al Arco',            hint:'Puntería y potencia',           lines:['Tiro al','Arco']},
-    {k:'pase',     label:'Pase',                    hint:'Precisión y alcance',           lines:['Pase']},
-    {k:'energia',  label:'Energía',                 hint:'Aguante los 60 minutos',        lines:['Energía']},
-    {k:'velocidad',label:'Velocidad',               hint:'Arranque y carrera',            lines:['Velocidad']},
-    {k:'juego',    label:'Entendimiento del juego', hint:'Ubicación y lectura de jugada', lines:['Entendimiento','del juego']}
-  ];
-  var SHORT = {Arquero:'ARQ', Defensor:'DEF', Volante:'VOL', Delantero:'DEL'};
-
-  var me = { num:'', name:'', x:null, y:null, attrs:{} };
-  ATTRS.forEach(function(a){ me.attrs[a.k] = 5; });
-  var saved = false, step = 1, busy = false, hydrated = false;
-  var roster = [];
-  var db = null, user = null, uid = null, canWrite = true;
-
-  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-  function calc(attrs){
-    var s = 0; ATTRS.forEach(function(a){ s += Number(attrs[a.k]) || 0; });
-    return Math.round(s / ATTRS.length * 10);
-  }
-  function zoneOf(x, y){
-    var t = (y - 12) / 396, zone;
-    if (t < 0.27) zone = 'Delantero';
-    else if (t < 0.52) zone = 'Volante';
-    else if (t < 0.85) zone = 'Defensor';
-    else zone = 'Arquero';
-    var side = zone === 'Arquero' ? '' : (x < 100 ? 'Izquierda' : (x > 200 ? 'Derecha' : 'Centro'));
-    return {zone:zone, side:side};
-  }
-  function posLabel(p){ return p.zone + (p.side ? ' · ' + p.side : ''); }
-
-  /* ---------- Cancha ---------- */
-  var grass = $('grass'), pitch = $('pitch'), pin = $('pin');
-  (function(){
-    var h = 396 / 7, out = '';
-    for (var i = 0; i < 7; i++){
-      out += '<rect x="12" y="' + (12 + i*h).toFixed(2) + '" width="276" height="' + h.toFixed(2) + '" fill="' + (i%2 ? 'var(--grass-b)' : 'var(--grass-a)') + '"/>';
-    }
-    grass.innerHTML = out;
-  })();
-
-  function renderPitch(){
-    if (me.x == null){ pin.hidden = true; }
-    else {
-      pin.hidden = false;
-      pin.setAttribute('transform', 'translate(' + me.x.toFixed(1) + ' ' + me.y.toFixed(1) + ')');
-      $('pinNum').textContent = me.num || '';
-    }
-    $('posText').textContent = me.x == null ? 'Tocá la cancha' : posLabel(zoneOf(me.x, me.y));
-    var g = '';
-    roster.forEach(function(p){
-      if (p.id === uid || typeof p.x !== 'number') return;
-      g += '<g transform="translate(' + p.x + ' ' + p.y + ')" opacity=".75"><circle r="9" fill="var(--field)" stroke="var(--chalk)" stroke-width="1.5"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)" style="font-family:var(--font-display)">' + (Number(p.num) || '') + '</text></g>';
-    });
-    $('others').innerHTML = g;
-  }
-  function pitchPoint(ev){
-    var r = pitch.getBoundingClientRect();
-    return {
-      x: clamp((ev.clientX - r.left) / r.width * 300, 18, 282),
-      y: clamp((ev.clientY - r.top) / r.height * 420, 18, 402)
-    };
-  }
-  var dragging = false;
-  pitch.addEventListener('pointerdown', function(ev){
-    dragging = true;
-    try{ pitch.setPointerCapture(ev.pointerId); }catch(e){}
-    var p = pitchPoint(ev); me.x = p.x; me.y = p.y; renderPitch();
-  });
-  pitch.addEventListener('pointermove', function(ev){
-    if (!dragging) return;
-    var p = pitchPoint(ev); me.x = p.x; me.y = p.y; renderPitch();
-  });
-  function endDrag(){ dragging = false; }
-  pitch.addEventListener('pointerup', endDrag);
-  pitch.addEventListener('pointercancel', endDrag);
-  pitch.addEventListener('keydown', function(ev){
-    var d = {ArrowLeft:[-10,0], ArrowRight:[10,0], ArrowUp:[0,-10], ArrowDown:[0,10]}[ev.key];
-    if (!d) return;
-    ev.preventDefault();
-    if (me.x == null){ me.x = 150; me.y = 300; }
-    me.x = clamp(me.x + d[0], 18, 282); me.y = clamp(me.y + d[1], 18, 402);
-    renderPitch();
-  });
-
-  /* ---------- Formulario ---------- */
-  $('num').addEventListener('input', function(e){
-    var v = e.target.value.replace(/\D/g,'').slice(0,2);
-    me.num = v; $('pinNum').textContent = v;
-  });
-  $('name').addEventListener('input', function(e){ me.name = e.target.value; });
-
-  function validateReg(){
-    var n = parseInt(me.num, 10);
-    if (!(n >= 1 && n <= 99)) return 'Ingresá un número de jugador entre 1 y 99.';
-    if (me.name.trim().length < 2) return 'Escribí tu nombre (al menos 2 letras).';
-    if (me.x == null) return 'Tocá la cancha para ubicar tu posición.';
-    var clash = roster.filter(function(p){ return p.id !== uid && Number(p.num) === n; })[0];
-    if (clash) return 'El ' + n + ' ya lo tiene ' + clash.name + '. Elegí otro número.';
-    return '';
-  }
-
-  /* ---------- Atributos y hexágono ---------- */
-  var attrsEl = $('attrs');
-  ATTRS.forEach(function(a){
-    var li = document.createElement('li'); li.className = 'attr';
-    li.innerHTML =
-      '<div class="row"><label for="r_' + a.k + '">' + a.label + '</label><output id="o_' + a.k + '" for="r_' + a.k + '">5</output></div>' +
-      '<small>' + a.hint + '</small>' +
-      '<input type="range" id="r_' + a.k + '" min="1" max="10" step="1" value="5">';
-    attrsEl.appendChild(li);
-    li.querySelector('input').addEventListener('input', function(e){
-      me.attrs[a.k] = Number(e.target.value);
-      $('o_' + a.k).textContent = e.target.value;
-      renderHex(false);
-    });
-  });
-
-  var CX = 180, CY = 160, R = 92;
-  function ang(i){ return (-90 + 60*i) * Math.PI / 180; }
-  function pt(i, r){ return [CX + r*Math.cos(ang(i)), CY + r*Math.sin(ang(i))]; }
-  function poly(r){
-    var s = [];
-    for (var i = 0; i < 6; i++){ var p = pt(i, r); s.push(p[0].toFixed(1) + ',' + p[1].toFixed(1)); }
-    return s.join(' ');
-  }
-  function renderHex(unfold){
-    var out = '';
-    [2,4,6,8,10].forEach(function(l){
-      out += '<polygon points="' + poly(R*l/10) + '" fill="' + (l === 10 ? 'var(--field)' : 'none') + '" stroke="var(--rule)" stroke-width="' + (l === 10 ? 1.5 : 1) + '"/>';
-    });
-    for (var i = 0; i < 6; i++){
-      var e = pt(i, R);
-      out += '<line x1="' + CX + '" y1="' + CY + '" x2="' + e[0].toFixed(1) + '" y2="' + e[1].toFixed(1) + '" stroke="var(--rule)" stroke-width="1"/>';
-    }
-    var dp = [], dots = '';
-    ATTRS.forEach(function(a, i){
-      var p = pt(i, R * me.attrs[a.k] / 10);
-      dp.push(p[0].toFixed(1) + ',' + p[1].toFixed(1));
-      dots += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="1.5"/>';
-    });
-    var data = '<polygon points="' + dp.join(' ') + '" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>' + dots;
-    var labels = '';
-    ATTRS.forEach(function(a, i){
-      var c = Math.cos(ang(i)), s = Math.sin(ang(i));
-      var lx = CX + (R + 16) * c, ly = CY + (R + 16) * s;
-      var anchor = c > 0.3 ? 'start' : (c < -0.3 ? 'end' : 'middle');
-      var n = a.lines.length + 1, lh = 15, y0;
-      if (s < -0.7) y0 = ly - lh*(n-1) - 2;
-      else if (s > 0.7) y0 = ly + 14;
-      else y0 = ly - lh*(n-1)/2 + 4;
-      var t = '<text text-anchor="' + anchor + '">';
-      a.lines.forEach(function(L, j){
-        t += '<tspan class="lbl-name" x="' + lx.toFixed(1) + '" y="' + (y0 + lh*j).toFixed(1) + '">' + L + '</tspan>';
-      });
-      t += '<tspan class="lbl-val" x="' + lx.toFixed(1) + '" y="' + (y0 + lh*a.lines.length + 2).toFixed(1) + '">' + me.attrs[a.k] + '</tspan></text>';
-      labels += t;
-    });
-    var hex = $('hex');
-    hex.innerHTML = out + '<g class="dataG" id="dataG">' + data + '</g>' + labels;
-    if (unfold){
-      var g = $('dataG'); g.classList.remove('unfold'); void g.getBoundingClientRect(); g.classList.add('unfold');
-    }
-    var sc = calc(me.attrs);
-    $('finalScore').textContent = sc;
-    hex.setAttribute('aria-label', 'Gráfico hexagonal. ' + ATTRS.map(function(a){ return a.label + ' ' + me.attrs[a.k]; }).join(', ') + '. Puntaje final ' + sc + '.');
-  }
-
-  /* ---------- Plantel ---------- */
-  function renderRoster(){
-    var list = roster.slice().sort(function(a, b){ return (b.score||0) - (a.score||0) || (a.num||0) - (b.num||0); });
-    ['rosterSide','rosterMain'].forEach(function(id){
-      var ul = $(id); ul.innerHTML = '';
-      if (!list.length){
-        var p = document.createElement('li'); p.style.display = 'block'; p.style.border = '0';
-        p.innerHTML = '<p class="empty">Todavía no se anotó nadie. Cuando los jugadores completen su ficha, aparecen acá ordenados por puntaje.</p>';
-        ul.appendChild(p); return;
-      }
-      list.forEach(function(p){
-        var li = document.createElement('li'); if (p.id === uid) li.className = 'me';
-        var badge = document.createElement('div'); badge.className = 'badge'; badge.textContent = p.num;
-        var nm = document.createElement('div'); nm.className = 'nm';
-        var b = document.createElement('b'); b.textContent = p.name + (p.id === uid ? ' (vos)' : '');
-        var sp = document.createElement('span'); sp.textContent = (p.zone ? posLabel(p) : 'Sin posición');
-        nm.appendChild(b); nm.appendChild(sp);
-        var sc = document.createElement('div'); sc.className = 'sc';
-        var st = document.createElement('strong'); st.textContent = p.score == null ? '–' : p.score;
-        var bar = document.createElement('div'); bar.className = 'bar';
-        var fill = document.createElement('i'); fill.style.width = clamp(p.score || 0, 0, 100) + '%';
-        bar.appendChild(fill); sc.appendChild(st); sc.appendChild(bar);
-        li.appendChild(badge); li.appendChild(nm); li.appendChild(sc);
-        ul.appendChild(li);
-      });
-    });
-    var txt = list.length + (list.length === 1 ? ' jugador' : ' jugadores');
-    $('countSide').textContent = txt; $('countMain').textContent = txt;
-  }
-
-  /* ---------- Navegación ---------- */
-  function go(n){
-    if (n === 2 && !saved) n = 1;
-    step = n;
-    [1,2,3].forEach(function(i){
-      $('v' + i).hidden = (i !== n);
-      var b = $('st' + i);
-      if (i === n) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current');
-    });
-    $('st2').disabled = !saved;
-    if (n === 2){
-      var z = zoneOf(me.x, me.y);
-      $('chipNum').textContent = me.num; $('chipName').textContent = me.name.trim(); $('chipPos').textContent = posLabel(z);
-      renderHex(true);
-    }
-    if (n === 1) renderPitch();
-  }
-  [1,2,3].forEach(function(i){ $('st' + i).addEventListener('click', function(){ go(i); }); });
-  $('editBtn').addEventListener('click', function(){ go(1); });
-
-  var toastTimer;
-  function toast(msg){
-    var t = $('toast'); t.textContent = msg; t.hidden = false;
-    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.hidden = true; }, 2600);
-  }
-  function notice(msg){ var n = $('notice'); n.textContent = msg; n.hidden = !msg; }
-
-  /* ---------- Guardado ---------- */
-  async function persist(){
-    var z = zoneOf(me.x, me.y);
-    var doc = {
-      num: parseInt(me.num, 10), name: me.name.trim(),
-      x: Math.round(me.x), y: Math.round(me.y), zone: z.zone, side: z.side,
-      attrs: Object.assign({}, me.attrs), score: calc(me.attrs), updatedAt: Date.now()
-    };
-    if (db && uid){
-      await db.collection('players').doc(uid).set(doc);
-    } else {
-      roster = [Object.assign({id:'local'}, doc)];
-      uid = uid || 'local';
-      renderRoster(); renderPitch();
-    }
-  }
-  async function guarded(fn, errEl){
-    if (busy) return;
-    busy = true; errEl.textContent = '';
-    try{ await fn(); }
-    catch(e){
-      errEl.textContent = 'No se pudo guardar. Revisá tu conexión o pedí que te den acceso de colaborador.';
-    }
-    busy = false;
-  }
-  $('regForm').addEventListener('submit', function(ev){
-    ev.preventDefault();
-    var msg = validateReg();
-    if (msg){ $('err').textContent = msg; return; }
-    var btn = $('goBtn'); btn.disabled = true;
-    guarded(async function(){
-      await persist(); saved = true; go(2);
-    }, $('err')).then(function(){ btn.disabled = false; });
-  });
-  $('saveBtn').addEventListener('click', function(){
-    var btn = $('saveBtn'); btn.disabled = true;
-    guarded(async function(){
-      await persist(); toast('Ficha guardada'); go(3);
-    }, $('err2')).then(function(){ btn.disabled = false; });
-  });
-
-  /* ---------- Datos compartidos ---------- */
-  function applyMine(p){
-    me.num = String(p.num); me.name = p.name; me.x = p.x; me.y = p.y;
-    ATTRS.forEach(function(a){ me.attrs[a.k] = (p.attrs && p.attrs[a.k]) || 5; });
-    $('num').value = me.num; $('name').value = me.name;
-    ATTRS.forEach(function(a){ $('r_' + a.k).value = me.attrs[a.k]; $('o_' + a.k).textContent = me.attrs[a.k]; });
-  }
-  function onPlayers(snap){
-    roster = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
-    var mine = roster.filter(function(p){ return p.id === uid; })[0];
-    if (!hydrated){
-      hydrated = true;
-      if (mine && typeof mine.x === 'number'){ applyMine(mine); saved = true; go(2); }
-    }
-    renderRoster();
-    if (step === 1) renderPitch();
-  }
-  async function boot(){
-    try{
-      if (window.claude && window.claude.use){
-        db = await window.claude.use('db');
-        user = await window.claude.use('user');
-      }
-    }catch(e){ db = null; }
-    if (user){
-      try{ uid = await user.id(); }catch(e){ uid = null; }
-      try{ if ((await user.can('data.write')) === false) canWrite = false; }catch(e){}
-    }
-    if (!db || !uid){
-      hydrated = true; db = null; uid = null;
-      notice('Estás sin conexión al plantel compartido. Podés probar la app, pero tu ficha no se va a guardar para los demás.');
-      return;
-    }
-    if (!canWrite) notice('Tu acceso es de solo lectura: podés ver el plantel, pero para anotarte necesitás permiso de colaborador.');
-    db.collection('players').onSnapshot(onPlayers, function(){
-      hydrated = true; notice('Se perdió la conexión con el plantel. Recargá la página.');
-    });
-  }
-
-  renderHex(false); renderRoster(); renderPitch(); go(1);
-  boot();
-})();
-</script>
-
-</body></html>
+   </section>
+  </div>
+  <div class="toast" hidden="" id="toast" role="status">
+  </div>
+  <script src="/public/script.js">
+  </script>
+ </body>
+</html>
